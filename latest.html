@@ -1,1 +1,947 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Newsfeed</title></head><body style="background:#0a0e17;color:#e2e8f0;font-family:-apple-system,sans-serif;text-align:center;padding:60px 20px"><h1 style="font-size:2rem">⚡ AI Newsfeed</h1><p style="color:#8892a8">Dashboard will auto-update with tomorrow's 6am run.</p><p style="color:#8892a8">Check your email for today's top 3 stories.</p></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Newsfeed — 2026-03-11</title>
+<style>
+:root {
+    --bg: #0a0e17;
+    --surface: #131a2b;
+    --surface-hover: #1a2338;
+    --border: #1e2d47;
+    --text: #e2e8f0;
+    --text-muted: #8892a8;
+    --accent: #6366f1;
+    --accent-glow: rgba(99, 102, 241, 0.15);
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --gradient-start: #6366f1;
+    --gradient-end: #8b5cf6;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.header {
+    background: linear-gradient(135deg, var(--surface) 0%, #0f1629 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+}
+
+.header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.logo h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.date-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.stats-bar {
+    display: flex;
+    gap: 1.25rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.stat { display: flex; align-items: center; gap: 0.3rem; }
+.stat-num { color: var(--accent); font-weight: 600; font-size: 1rem; }
+
+.filter-bar {
+    max-width: 900px;
+    margin: 1rem auto;
+    padding: 0 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.feed {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem 3rem;
+}
+
+.article-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.article-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--gradient-start), var(--gradient-end));
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+.article-card:hover {
+    background: var(--surface-hover);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.article-card:hover::before { opacity: 1; }
+
+.article-card.read {
+    opacity: 0.6;
+    border-left: 3px solid var(--green);
+}
+
+.article-card.read .read-badge { display: inline-block; }
+
+.article-card.thumbed-down {
+    opacity: 0.35;
+    order: 999;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.rank-badge {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: white;
+    font-weight: 700;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    min-width: 28px;
+    text-align: center;
+}
+
+.tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.15rem 0.55rem;
+    border-radius: 4px;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.source-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+.read-badge {
+    display: none;
+    background: var(--green);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+}
+
+.article-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.article-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+    transition: color 0.2s;
+}
+
+.article-link:hover .article-title {
+    color: #a5b4fc;
+}
+
+.article-overview {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+    margin-bottom: 0.75rem;
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.score-bar {
+    flex: 1;
+    max-width: 200px;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    position: relative;
+    cursor: help;
+}
+
+.score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.score-text {
+    position: absolute;
+    right: -70px;
+    top: -5px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.actions { display: flex; gap: 0.4rem; }
+
+.btn-thumbs-down {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.35rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.btn-thumbs-down:hover { border-color: var(--red); color: var(--red); }
+.btn-thumbs-down.active { background: var(--red); color: white; border-color: var(--red); }
+
+/* Notification toast */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+    .header { padding: 1rem 0.75rem; }
+    .header-inner { flex-direction: column; align-items: flex-start; }
+    .feed { padding: 0.5rem 0.75rem 3rem; }
+    .article-card { padding: 1rem; }
+    .article-title { font-size: 0.95rem; }
+    .score-bar { max-width: 120px; }
+    .score-text { display: none; }
+    .filter-bar { padding: 0 0.75rem; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-inner">
+        <div class="logo">
+            <div class="logo-icon">&#x26A1;</div>
+            <div>
+                <h1>AI Newsfeed</h1>
+                <div class="date-label">Wednesday, March 11, 2026</div>
+            </div>
+        </div>
+        <div class="stats-bar">
+            <div class="stat"><span class="stat-num">20</span> stories</div>
+            <div class="stat"><span class="stat-num" id="read-count">0</span> read</div>
+            <div class="stat"><span class="stat-num">15</span> sources</div>
+        </div>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <button class="filter-btn active" onclick="filterArticles('all', this)">All</button>
+    <button class="filter-btn" onclick="filterArticles('agentic', this)">Agentic AI</button>
+    <button class="filter-btn" onclick="filterArticles('pe', this)">PE / Growth</button>
+    <button class="filter-btn" onclick="filterArticles('data', this)">Data Infra</button>
+    <button class="filter-btn" onclick="filterArticles('trends', this)">Trends</button>
+    <button class="filter-btn" onclick="filterArticles('unread', this)">Unread</button>
+</div>
+
+<div class="feed" id="feed">
+
+        <div class="article-card  " data-id="tdv001" data-rank="1">
+            <div class="card-header">
+                <span class="rank-badge">#1</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">The Deep View</span>
+                
+            </div>
+            <a href="https://www.thedeepview.com/articles/voice-emerges-as-ai-s-next-frontier-as-deepgram-raises-usd130m" target="_blank" class="article-link" onclick="markRead('tdv001', this)">
+                <h3 class="article-title">Voice Emerges as AI's Next Frontier as Deepgram Raises $130M</h3>
+            </a>
+            <p class="article-overview">Deepgram announced a $130M Series C bringing total funding to $215M+ and valuation to $1.3B. The company aims to pass the Audio Turing Test within a year, signaling voice as the next major AI interface layer. For PE-backed companies, voice AI represents a new frontier for customer experience automation — contact centers, sales enablement, and real-time analytics at scale.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 60% | PE/GE: 55% | Biz Impact: 70% | Trends: 40%">Score: 0.68</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('tdv001', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="tdv002" data-rank="2">
+            <div class="card-header">
+                <span class="rank-badge">#2</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">The Deep View</span>
+                
+            </div>
+            <a href="https://www.thedeepview.com/articles/can-anthropic-turn-claude-into-a-one-stop-work-hub" target="_blank" class="article-link" onclick="markRead('tdv002', this)">
+                <h3 class="article-title">Can Anthropic Turn Claude into a One-Stop Work Hub?</h3>
+            </a>
+            <p class="article-overview">Anthropic is positioning Claude as an enterprise work hub — not just a chatbot. With Cowork for desktop automation, tool use for agentic workflows, and deep integrations across productivity suites, the play mirrors Salesforce's platform strategy. For PE operating partners, this signals the AI workspace consolidation thesis is real and accelerating.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 75% | PE/GE: 40% | Biz Impact: 70% | Trends: 45%">Score: 0.65</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('tdv002', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="tdv003" data-rank="3">
+            <div class="card-header">
+                <span class="rank-badge">#3</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">The Deep View</span>
+                
+            </div>
+            <a href="https://www.thedeepview.com/articles/openai-just-launched-its-answer-to-claude-cowork" target="_blank" class="article-link" onclick="markRead('tdv003', this)">
+                <h3 class="article-title">OpenAI Just Launched Its Answer to Claude Cowork</h3>
+            </a>
+            <p class="article-overview">On the same day Anthropic shipped Opus 4.6, OpenAI launched GPT-5.3-Codex to rival Claude Cowork. The enterprise AI platform war is heating up — both companies racing to own the daily workflow layer. Portfolio companies evaluating AI tooling face a critical build-vs-buy-vs-platform decision that directly impacts productivity ROI.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 70% | PE/GE: 35% | Biz Impact: 65% | Trends: 50%">Score: 0.63</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('tdv003', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="tdv004" data-rank="4">
+            <div class="card-header">
+                <span class="rank-badge">#4</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">The Deep View</span>
+                
+            </div>
+            <a href="https://www.thedeepview.com/articles/prediction-markets-google-will-win-2026-ai-race" target="_blank" class="article-link" onclick="markRead('tdv004', this)">
+                <h3 class="article-title">Prediction Markets Give Google 74% Chance of Winning 2026 AI Race</h3>
+            </a>
+            <p class="article-overview">Prediction markets give Google a 74% chance of having the best AI model by end of March and 65% by June. Google's advantage: vertically integrated infrastructure from TPUs to cloud to consumer products. For investors, this signals where enterprise AI budgets may consolidate and which platform bets carry lowest switching risk.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 35% | PE/GE: 40% | Biz Impact: 55% | Trends: 65%">Score: 0.58</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('tdv004', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="tdv005" data-rank="5">
+            <div class="card-header">
+                <span class="rank-badge">#5</span>
+                <span class="tag" style="background:#ec4899">AI Trends</span>
+                <span class="source-label">The Deep View</span>
+                
+            </div>
+            <a href="https://www.thedeepview.com/articles/anthropic-decries-ads-in-chatbots" target="_blank" class="article-link" onclick="markRead('tdv005', this)">
+                <h3 class="article-title">Anthropic Decries Ads in Chatbots — Stakes Claim on Trust</h3>
+            </a>
+            <p class="article-overview">Anthropic publicly committed to keeping Claude ad-free, staking a differentiation claim around trust and alignment. As AI assistants become enterprise workflow infrastructure, the monetization model matters — ads create misaligned incentives. For enterprise buyers and PE portfolio companies, this signals which AI vendors prioritize user trust vs. ad revenue.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 20% | PE/GE: 30% | Biz Impact: 45% | Trends: 70%">Score: 0.52</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('tdv005', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art001" data-rank="6">
+            <div class="card-header">
+                <span class="rank-badge">#6</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">Futurum Group</span>
+                
+            </div>
+            <a href="https://futurumgroup.com/press-release/enterprise-ai-roi-shifts-as-agentic-priorities-surge/" target="_blank" class="article-link" onclick="markRead('art001', this)">
+                <h3 class="article-title">Enterprise AI ROI Shifts as Agentic Priorities Surge — Direct Financial Impact Doubles</h3>
+            </a>
+            <p class="article-overview">Survey of 830 global IT decision-makers shows Autonomous Agents/Agentic AI surged 31.5% as the fastest-growing technology priority. Direct financial impact — combining top-line revenue growth and bottom-line profitability — nearly doubled to 21.7% as the primary ROI metric. Productivity gains dropped as a leading metric. The shift from 'efficiency' to 'P&L impact' is the signal PE firms need.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 85% | PE/GE: 45% | Biz Impact: 80% | Trends: 30%">Score: 0.62</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art001', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art021" data-rank="7">
+            <div class="card-header">
+                <span class="rank-badge">#7</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">BusinessWire / CrewAI</span>
+                
+            </div>
+            <a href="https://www.businesswire.com/news/home/20260211693427/en/Agentic-AI-Reaches-Tipping-Point-100-of-Enterprises-Plan-to-Expand-Adoption-in-2026-New-CrewAI-Survey-Finds" target="_blank" class="article-link" onclick="markRead('art021', this)">
+                <h3 class="article-title">Agentic AI Reaches Tipping Point: 100% of Enterprises Plan to Expand Adoption</h3>
+            </a>
+            <p class="article-overview">CrewAI survey finds 100% of enterprises plan to expand agentic AI in 2026, with nearly three-quarters calling it a critical priority. Organizations have automated 31% of workflows and expect to expand by 33% more this year. 75% report high impact on saving time, 69% cite operational cost reductions, 62% see revenue generation impact. The ROI case is closed — adoption is now about speed of execution.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 80% | PE/GE: 40% | Biz Impact: 75% | Trends: 25%">Score: 0.60</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art021', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art022" data-rank="8">
+            <div class="card-header">
+                <span class="rank-badge">#8</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">PR Newswire</span>
+                
+            </div>
+            <a href="https://www.prnewswire.com/news-releases/diligencesquared-raises-5m-to-bring-ai-driven-commercial-due-diligence-to-private-equity-302706143.html" target="_blank" class="article-link" onclick="markRead('art022', this)">
+                <h3 class="article-title">DiligenceSquared Raises $5M to Bring AI-Driven Due Diligence to Private Equity</h3>
+            </a>
+            <p class="article-overview">DiligenceSquared raised $5M seed led by RELENTLESS with Y Combinator participation. The platform automates commercial due diligence that PE firms typically buy from McKinsey, BCG, and Bain for $500K-$1M per project. This is a direct disruption of the PE services stack — if the output quality holds, it compresses deal timelines and dramatically cuts diligence costs across the portfolio.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 55% | PE/GE: 90% | Biz Impact: 60% | Trends: 15%">Score: 0.58</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art022', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art003" data-rank="9">
+            <div class="card-header">
+                <span class="rank-badge">#9</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">Bloomberg</span>
+                
+            </div>
+            <a href="https://www.bloomberg.com/news/articles/2026-03-10/lightspeed-andreessen-back-4-2-billion-ai-data-center-supplier" target="_blank" class="article-link" onclick="markRead('art003', this)">
+                <h3 class="article-title">Nexthop AI Raises $500M at $4.2B Valuation for AI Data Center Networking</h3>
+            </a>
+            <p class="article-overview">Nexthop AI raised $500M led by Lightspeed with a16z joining. The company builds networking hardware and software for AI data centers — the connective tissue between massive GPU clusters. With hyperscalers spending $700B on data center projects in 2026, the networking layer is a critical bottleneck and investable infrastructure play.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 40% | PE/GE: 70% | Biz Impact: 65% | Trends: 25%">Score: 0.55</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art003', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art023" data-rank="10">
+            <div class="card-header">
+                <span class="rank-badge">#10</span>
+                <span class="tag" style="background:#22c55e">PE / Growth</span>
+                <span class="source-label">WKZO / Reuters</span>
+                
+            </div>
+            <a href="https://wkzo.com/2026/03/11/nvidia-to-invest-2-billion-in-neocloud-nebius-amid-ai-data-center-push/" target="_blank" class="article-link" onclick="markRead('art023', this)">
+                <h3 class="article-title">Nvidia Invests $2B in Neocloud Nebius Amid AI Data Center Push</h3>
+            </a>
+            <p class="article-overview">Nvidia invested $2B in AI cloud company Nebius, which plans to deploy 5+ gigawatts of data center capacity by 2030. Nvidia continues to expand from chips into the full infrastructure stack — compute, networking, cloud. For infrastructure investors, this confirms the capital intensity thesis: winning in AI requires controlling physical capacity, not just software.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 30% | PE/GE: 55% | Biz Impact: 60% | Trends: 30%">Score: 0.52</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art023', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art024" data-rank="11">
+            <div class="card-header">
+                <span class="rank-badge">#11</span>
+                <span class="tag" style="background:#22c55e">PE / Growth</span>
+                <span class="source-label">Crunchbase</span>
+                
+            </div>
+            <a href="https://news.crunchbase.com/venture/record-setting-global-funding-february-2026-openai-anthropic/" target="_blank" class="article-link" onclick="markRead('art024', this)">
+                <h3 class="article-title">Massive AI Deals Drive $189B Startup Funding Record in February</h3>
+            </a>
+            <p class="article-overview">February 2026 was the largest startup funding month in history at $189B, with AI-related startups raising $171B — 90% of all global venture funding. OpenAI's $110B round anchored the total. The concentration of capital in AI is unprecedented and reshaping the entire venture/PE landscape. Growth equity firms must decide: ride the wave or get displaced by it.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 25% | PE/GE: 70% | Biz Impact: 55% | Trends: 35%">Score: 0.50</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art024', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art025" data-rank="12">
+            <div class="card-header">
+                <span class="rank-badge">#12</span>
+                <span class="tag" style="background:#22c55e">PE / Growth</span>
+                <span class="source-label">Arcadia Capital</span>
+                
+            </div>
+            <a href="https://www.arcadiacapital.io/news-events/ai-cybersecurity-march-2026" target="_blank" class="article-link" onclick="markRead('art025', this)">
+                <h3 class="article-title">AI Cybersecurity M&A and Growth Equity Update — March 2026</h3>
+            </a>
+            <p class="article-overview">Arcadia Capital's monthly M&A and growth equity tracker covers AI cybersecurity — one of the fastest-growing verticals at the intersection of AI and enterprise infrastructure. As AI attack surfaces expand, securitybecomes a non-negotiable line item. PE firms with security-focused portfolio companies are seeing accelerating inbound interest and compressed sales cycles.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:96%"></div>
+                    <span class="score-text" title="Agentic/ROI: 30% | PE/GE: 80% | Biz Impact: 50% | Trends: 25%">Score: 0.48</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art025', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art026" data-rank="13">
+            <div class="card-header">
+                <span class="rank-badge">#13</span>
+                <span class="tag" style="background:#22c55e">PE / Growth</span>
+                <span class="source-label">LegalNodes</span>
+                
+            </div>
+            <a href="https://www.legalnodes.com/article/eu-ai-act-2026-updates-compliance-requirements-and-business-risks" target="_blank" class="article-link" onclick="markRead('art026', this)">
+                <h3 class="article-title">EU AI Act August 2026 Deadline: Most Enterprises Face Significant Compliance Gaps</h3>
+            </a>
+            <p class="article-overview">The EU AI Act's critical compliance deadline for high-risk systems is August 2, 2026. Over half of organizations lack systematic inventories of AI systems in production. Conformity assessments, technical documentation, CE marking, and EU database registration must all be completed. For PE portfolio companies operating in or selling to Europe, this is a ticking operational and valuation risk.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:92%"></div>
+                    <span class="score-text" title="Agentic/ROI: 15% | PE/GE: 45% | Biz Impact: 50% | Trends: 80%">Score: 0.46</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art026', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art027" data-rank="14">
+            <div class="card-header">
+                <span class="rank-badge">#14</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">Codiant</span>
+                
+            </div>
+            <a href="https://codiant.ai/blog/top-agentic-ai-use-cases-powering-enterprise-roi-2026/" target="_blank" class="article-link" onclick="markRead('art027', this)">
+                <h3 class="article-title">10 Agentic AI Use Cases Powering Enterprise ROI in 2026</h3>
+            </a>
+            <p class="article-overview">Practical breakdown of 10 agentic AI use cases in production with measured ROI: customer service automation, supply chain optimization, financial analysis agents, code generation, HR workflow automation, sales prospecting, legal document review, marketing personalization, IT operations, and quality assurance. Each case includes deployment patterns and metrics — a reference guide for PE operating teams evaluating AI opportunities.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:90%"></div>
+                    <span class="score-text" title="Agentic/ROI: 80% | PE/GE: 30% | Biz Impact: 65% | Trends: 15%">Score: 0.45</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art027', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art002" data-rank="15">
+            <div class="card-header">
+                <span class="rank-badge">#15</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">CLA Connect</span>
+                
+            </div>
+            <a href="https://www.claconnect.com/en/resources/blogs/private-equity/ai-and-private-equity-in-2026-6-predictions-redefining-value-creation" target="_blank" class="article-link" onclick="markRead('art002', this)">
+                <h3 class="article-title">AI and Private Equity in 2026: 6 Predictions Redefining Value Creation</h3>
+            </a>
+            <p class="article-overview">AI emerges as a standalone third value lever alongside financial engineering and operational excellence. 84% of PE funds expect AI to have significant transformative impact. Firms embedding AI into operational playbooks create measurable value faster and position portfolio companies for premium exits. Focus areas: predictive pricing, supply chain optimization, and customer analytics driving EBITDA growth.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:100%"></div>
+                    <span class="score-text" title="Agentic/ROI: 55% | PE/GE: 90% | Biz Impact: 75% | Trends: 20%">Score: 0.60</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art002', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="tdv006" data-rank="16">
+            <div class="card-header">
+                <span class="rank-badge">#16</span>
+                <span class="tag" style="background:#22c55e">PE / Growth</span>
+                <span class="source-label">The Deep View</span>
+                
+            </div>
+            <a href="https://www.thedeepview.com/newsletter/ai-companies-court-pentagon-anthropic-resists" target="_blank" class="article-link" onclick="markRead('tdv006', this)">
+                <h3 class="article-title">AI Companies Court Pentagon While Anthropic Resists</h3>
+            </a>
+            <p class="article-overview">AI labs are diverging on defense and government contracts — some aggressively courting the Pentagon while Anthropic holds a more cautious stance. The defense AI market is massive and growing, but comes with ethical and reputational considerations. For PE firms evaluating AI companies, the defense posture signals risk appetite, TAM strategy, and long-term brand positioning.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:90%"></div>
+                    <span class="score-text" title="Agentic/ROI: 20% | PE/GE: 35% | Biz Impact: 40% | Trends: 65%">Score: 0.45</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('tdv006', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art007b" data-rank="17">
+            <div class="card-header">
+                <span class="rank-badge">#17</span>
+                <span class="tag" style="background:#22c55e">PE / Growth</span>
+                <span class="source-label">CNBC</span>
+                
+            </div>
+            <a href="https://www.cnbc.com/2026/03/09/nscale-ai-data-center-nvidia-raise.html" target="_blank" class="article-link" onclick="markRead('art007b', this)">
+                <h3 class="article-title">Nscale Raises $2B Series C at $14.6B Valuation for AI Hyperscale Data Centers</h3>
+            </a>
+            <p class="article-overview">Nscale secured $2B at $14.6B valuation in a Nvidia-backed Series C. Building vertically integrated AI infrastructure — GPU compute, networking, data services, and orchestration software — across Europe, North America, and Asia. The vertical integration play mirrors what winning infrastructure companies look like: control the full stack, not just one layer.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:88%"></div>
+                    <span class="score-text" title="Agentic/ROI: 30% | PE/GE: 60% | Biz Impact: 55% | Trends: 25%">Score: 0.44</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art007b', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art028" data-rank="18">
+            <div class="card-header">
+                <span class="rank-badge">#18</span>
+                <span class="tag" style="background:#22c55e">PE / Growth</span>
+                <span class="source-label">Wilson Sonsini</span>
+                
+            </div>
+            <a href="https://www.wsgr.com/en/insights/2026-year-in-preview-ai-regulatory-developments-for-companies-to-watch-out-for.html" target="_blank" class="article-link" onclick="markRead('art028', this)">
+                <h3 class="article-title">2026 AI Regulatory Developments for Companies to Watch — Wilson Sonsini</h3>
+            </a>
+            <p class="article-overview">Wilson Sonsini's comprehensive regulatory preview maps the 2026 AI legal landscape: EU AI Act high-risk deadlines in August, proliferating US state-level AI laws, evolving copyright and IP frameworks, and new enforcement mechanisms. Essential reading for PE legal teams conducting AI-related diligence or managing portfolio compliance risk.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:84%"></div>
+                    <span class="score-text" title="Agentic/ROI: 10% | PE/GE: 50% | Biz Impact: 40% | Trends: 75%">Score: 0.42</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art028', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art010" data-rank="19">
+            <div class="card-header">
+                <span class="rank-badge">#19</span>
+                <span class="tag" style="background:#6366f1">Agentic AI</span>
+                <span class="source-label">PwC</span>
+                
+            </div>
+            <a href="https://www.pwc.com/us/en/industries/financial-services/library/private-equity-ai-transformation.html" target="_blank" class="article-link" onclick="markRead('art010', this)">
+                <h3 class="article-title">How Private Equity Survives AI: PwC's Framework for Portfolio Transformation</h3>
+            </a>
+            <p class="article-overview">PwC outlines how AI delivers go-to-market optimization, pricing strategy, and customer analytics in portfolio companies. Leading PE firms use AI to analyze location and consumption data for site selection, driving rapid expansion. Higher EBITDA and improved multiples come to sponsors who integrate AI early and show top-line results well before exit.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:96%"></div>
+                    <span class="score-text" title="Agentic/ROI: 45% | PE/GE: 85% | Biz Impact: 60% | Trends: 15%">Score: 0.48</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art010', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-card  " data-id="art029" data-rank="20">
+            <div class="card-header">
+                <span class="rank-badge">#20</span>
+                <span class="tag" style="background:#22c55e">PE / Growth</span>
+                <span class="source-label">VentureBurn</span>
+                
+            </div>
+            <a href="https://ventureburn.com/from-idea-to-investment-what-venture-capital-actually-sees-in-ai-startups/" target="_blank" class="article-link" onclick="markRead('art029', this)">
+                <h3 class="article-title">AI Startups Funding: Why Infrastructure Wins in 2026</h3>
+            </a>
+            <p class="article-overview">Deep analysis of why capital is concentrating in AI infrastructure over applications. Infrastructure companies offer more defensible moats, recurring revenue from compute/storage, and platform lock-in. Application-layer startups face commoditization risk as foundation models improve. The lesson for growth equity: invest in picks-and-shovels, not gold miners.</p>
+            <div class="card-footer">
+                <div class="score-bar">
+                    <div class="score-fill" style="width:80%"></div>
+                    <span class="score-text" title="Agentic/ROI: 25% | PE/GE: 60% | Biz Impact: 50% | Trends: 30%">Score: 0.40</span>
+                </div>
+                <div class="actions">
+                    <button class="btn-thumbs-down " onclick="thumbsDown('art029', this)" title="Not interested">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Preferences stored in localStorage for persistence
+const PREFS_KEY = 'ai_newsfeed_prefs_2026-03-11';
+
+function getPrefs() {
+    try {
+        return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}'  );
+    } catch { return {}; }
+}
+
+function savePrefs(prefs) {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function markRead(id, el) {
+    const prefs = getPrefs();
+    if (!prefs.read) prefs.read = [];
+    if (!prefs.read.includes(id)) {
+        prefs.read.push(id);
+        savePrefs(prefs);
+
+        const card = el.closest('.article-card');
+        card.classList.add('read');
+        const badge = card.querySelector('.read-badge');
+        if (badge) badge.style.display = 'inline-block';
+
+        // Update counter
+        const counter = document.getElementById('read-count');
+        counter.textContent = parseInt(counter.textContent) + 1;
+    }
+    // Also save to preferences file via data attribute for next fetch
+    saveFeedback('read', id);
+}
+
+function thumbsDown(id, btn) {
+    const card = btn.closest('.article-card');
+    const isActive = btn.classList.contains('active');
+
+    if (isActive) {
+        btn.classList.remove('active');
+        card.classList.remove('thumbed-down');
+        showToast('Feedback removed');
+        saveFeedback('undo_thumbsdown', id);
+    } else {
+        btn.classList.add('active');
+        card.classList.add('thumbed-down');
+        showToast('Got it — fewer stories like this');
+        saveFeedback('thumbsdown', id);
+    }
+}
+
+function saveFeedback(action, articleId) {
+    // Store feedback in localStorage for the scheduled task to pick up
+    const KEY = 'ai_newsfeed_feedback';
+    let feedback = [];
+    try { feedback = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch {}
+    feedback.push({
+        action: action,
+        articleId: articleId,
+        timestamp: new Date().toISOString()
+    });
+    localStorage.setItem(KEY, JSON.stringify(feedback));
+}
+
+function filterArticles(filter, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const cards = document.querySelectorAll('.article-card');
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        let show = true;
+
+        switch(filter) {
+            case 'agentic':
+                show = /agent|agentic|autonomous|orchestrat|workflow|tool use|function call|rag|retrieval/i.test(text);
+                break;
+            case 'pe':
+                show = /private equity|growth equity|portfolio|buyout|m&a|acquisition|funding|valuation|saas|arr/i.test(text);
+                break;
+            case 'data':
+                show = /data infra|pipeline|lakehouse|warehouse|etl|streaming|databricks|snowflake|data mesh/i.test(text);
+                break;
+            case 'trends':
+                show = /regulat|governance|ethics|safety|open source|eu ai act|copyright|bias|security/i.test(text);
+                break;
+            case 'unread':
+                show = !card.classList.contains('read');
+                break;
+            default:
+                show = true;
+        }
+
+        card.style.display = show ? 'block' : 'none';
+    });
+}
+</script>
+</body>
+</html>
